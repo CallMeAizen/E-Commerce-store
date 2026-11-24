@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ECommerceStore.Api/ECommerceStore.Api.csproj" />
+  <Project Path="ECommerceStore.Domain/ECommerceStore.Domain.csproj" Id="e681ae62-2a27-4383-8d13-bc219363feb0" />
+  <Project Path="ECommerceStore.Infrastructure/ECommerceStore.Infrastructure.csproj" Id="6a74e180-4f89-4401-83fa-8dc458e83e15" />
+</Solution>
