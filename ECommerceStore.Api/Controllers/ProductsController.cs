@@ -30,10 +30,36 @@ public class ProductsController : ControllerBase
     };
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+     [FromQuery] string? search,
+     [FromQuery] int? categoryId,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
     {
-        var products = await _context.Products
-            .AsNoTracking()
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
+
+        var query = _context.Products.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(p =>
+                p.Name.Contains(search) ||
+                (p.Description != null && p.Description.Contains(search)));
+        }
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var products = await query
+            .OrderBy(p => p.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -47,7 +73,16 @@ public class ProductsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(products);
+        var result = new PagedResultDto<ProductDto>
+        {
+            Items = products,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
+
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
