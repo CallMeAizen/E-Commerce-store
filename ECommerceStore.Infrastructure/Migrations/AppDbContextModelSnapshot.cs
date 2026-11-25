@@ -22,6 +22,41 @@ namespace ECommerceStore.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ECommerceStore.Domain.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Electronic devices",
+                            Name = "Electronics"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Product accessories",
+                            Name = "Accessories"
+                        });
+                });
+
             modelBuilder.Entity("ECommerceStore.Domain.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +64,11 @@ namespace ECommerceStore.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -48,12 +88,15 @@ namespace ECommerceStore.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Products");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
+                            CategoryId = 1,
                             CreatedAt = new DateTime(2026, 11, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Wireless headphones",
                             Name = "Headphones",
@@ -63,6 +106,7 @@ namespace ECommerceStore.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
+                            CategoryId = 2,
                             CreatedAt = new DateTime(2026, 11, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Mechanical keyboard",
                             Name = "Keyboard",
@@ -72,12 +116,29 @@ namespace ECommerceStore.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
+                            CategoryId = 2,
                             CreatedAt = new DateTime(2026, 11, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Wireless mouse",
                             Name = "Mouse",
                             Price = 29.99m,
                             Stock = 50
                         });
+                });
+
+            modelBuilder.Entity("ECommerceStore.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("ECommerceStore.Domain.Entities.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("ECommerceStore.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

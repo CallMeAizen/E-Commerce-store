@@ -1,6 +1,16 @@
 @ECommerceStore.Api_HostAddress = http://localhost:5008
 
-GET {{ECommerceStore.Api_HostAddress}}/weatherforecast/
+GET {{ECommerceStore.Api_HostAddress}}/api/products
 Accept: application/json
 
 ###
+
+POST {{ECommerceStore.Api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "description": "Created from the .http file",
+  "price": 19.99,
+  "stock": 5
+}

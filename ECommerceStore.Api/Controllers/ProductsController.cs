@@ -24,7 +24,9 @@ public class ProductsController : ControllerBase
         Description = p.Description,
         Price = p.Price,
         Stock = p.Stock,
-        CreatedAt = p.CreatedAt
+        CreatedAt = p.CreatedAt,
+        CategoryId = p.CategoryId,
+        CategoryName = p.Category?.Name
     };
 
     [HttpGet]
@@ -39,7 +41,9 @@ public class ProductsController : ControllerBase
                 Description = p.Description,
                 Price = p.Price,
                 Stock = p.Stock,
-                CreatedAt = p.CreatedAt
+                CreatedAt = p.CreatedAt,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category!.Name
             })
             .ToListAsync();
 
@@ -49,7 +53,10 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
         if (product == null) return NotFound();
 
         return Ok(ToDto(product));
@@ -58,13 +65,18 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
+        var category = await _context.Categories.FindAsync(dto.CategoryId);
+        if (category == null) return BadRequest("Category not found.");
+
         var product = new Product
         {
             Name = dto.Name,
             Description = dto.Description,
             Price = dto.Price,
             Stock = dto.Stock,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CategoryId = dto.CategoryId,
+            Category = category
         };
 
         _context.Products.Add(product);
@@ -79,12 +91,18 @@ public class ProductsController : ControllerBase
         var product = await _context.Products.FindAsync(id);
         if (product == null) return NotFound();
 
+        var category = await _context.Categories.FindAsync(dto.CategoryId);
+        if (category == null) return BadRequest("Category not found.");
+
         product.Name = dto.Name;
         product.Description = dto.Description;
         product.Price = dto.Price;
         product.Stock = dto.Stock;
+        product.CategoryId = dto.CategoryId;
+        product.Category = category;
 
         await _context.SaveChangesAsync();
+
         return NoContent();
     }
 
