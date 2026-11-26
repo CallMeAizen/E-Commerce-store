@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories => Set<Category>();
 
+    public DbSet<CartItem> CartItems => Set<CartItem>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -51,5 +52,15 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     new IdentityRole { Id = "1", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "6f249086-6a30-4d25-97ed-4e3b2140f2be" },
     new IdentityRole { Id = "2", Name = "Customer", NormalizedName = "CUSTOMER", ConcurrencyStamp = "98c44924-cf38-4ac3-aae2-3186a546b405" }
 );
+
+        modelBuilder.Entity<CartItem>()
+    .HasIndex(c => new { c.UserId, c.ProductId })
+    .IsUnique();
+
+        modelBuilder.Entity<CartItem>()
+            .HasOne(c => c.Product)
+            .WithMany()
+            .HasForeignKey(c => c.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
